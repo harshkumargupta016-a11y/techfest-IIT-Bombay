@@ -1,1 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Techfest — IIT Bombay · GRAFT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0D0C;
+    --panel: #121716;
+    --panel-2: #191F1E;
+    --line: rgba(220,231,227,0.10);
+    --line-strong: rgba(220,231,227,0.22);
+    --chrome: #E1E8E5;
+    --chrome-dim: #8A9A96;
+    --cyan: #3FD1C7;
+    --cyan-dim: rgba(63,209,199,0.35);
+    --amber: #F2A93B;
+    --radius-cut: 2px;
+  }
 
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--chrome);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; scroll-behavior:auto !important; }
+  }
+
+  h1,h2,h3,.display{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+
+  a{ color:inherit; text-decoration:none; }
+
+  ::selection{ background:var(--cyan); color:#06110F; }
+
+  :focus-visible{
+    outline:2px solid var(--cyan);
+    outline-offset:3px;
+  }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* ---------- corner-cut panel shape, used sparingly ---------- */
+  .cut{
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:50;
+    background:rgba(10,13,12,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height:68px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size:1.05rem;
+    letter-spacing:0.02em;
+  }
+  .brand svg{ width:26px; height:26px; }
+  .brand .sub{
+    color:var(--chrome-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:400;
+    font-size:0.72rem;
+  }
+  nav.links{
+    display:flex;
+    gap:36px;
+    font-size:0.92rem;
+    color:var(--chrome-dim);
+  }
+  nav.links a{ transition:color .2s; position:relative; }
+  nav.links a:hover{ color:var(--chrome); }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 22px;
+    background:var(--cyan);
+    color:#06110F;
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    letter-spacing:0.02em;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    transition:filter .2s, transform .2s;
+  }
+  .btn:hover{ filter:brightness(1.12); transform:translateY(-1px); }
+  .btn.ghost{
+    background:transparent;
+    color:var(--chrome);
+    border:1px solid var(--line-strong);
+  }
+  .btn.ghost:hover{ border-color:var(--cyan); color:var(--cyan); }
+
+  @media (max-width:780px){
+    nav.links{ display:none; }
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:168px 0 100px;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.15fr 0.85fr;
+    gap:48px;
+    align-items:center;
+  }
+  @media (max-width:900px){
+    .hero-grid{ grid-template-columns:1fr; }
+  }
+
+  .kicker{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    color:var(--cyan);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+    margin-bottom:22px;
+  }
+  .kicker .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--cyan);
+    box-shadow:0 0 0 4px var(--cyan-dim);
+    animation:blip 2.4s ease-in-out infinite;
+  }
+  @keyframes blip{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+  .hero h1{
+    font-size:clamp(2.6rem, 5.4vw, 4.6rem);
+    line-height:1.04;
+    max-width:12ch;
+  }
+  .hero h1 span{ color:var(--chrome-dim); }
+
+  .hero p.lede{
+    margin-top:26px;
+    max-width:46ch;
+    color:var(--chrome-dim);
+    font-size:1.08rem;
+  }
+
+  .hero-cta{
+    display:flex;
+    gap:16px;
+    margin-top:38px;
+    flex-wrap:wrap;
+  }
+
+  /* vitals readout bar */
+  .vitals{
+    margin-top:64px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .vital{
+    padding:18px 22px 18px 0;
+    border-right:1px solid var(--line);
+  }
+  .vital:last-child{ border-right:none; padding-right:0; }
+  .vital .num{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size:1.7rem;
+    color:var(--chrome);
+  }
+  .vital .lbl{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--chrome-dim);
+    margin-top:4px;
+  }
+  @media (max-width:640px){
+    .vitals{ grid-template-columns:repeat(2,1fr); }
+    .vital{ border-right:1px solid var(--line); }
+    .vital:nth-child(2n){ border-right:none; }
+  }
+
+  /* hero rig illustration */
+  .rig{
+    position:relative;
+    aspect-ratio:1/1.05;
+  }
+  .rig svg{ width:100%; height:100%; }
+  .rig .pulse-path{
+    fill:none;
+    stroke:var(--cyan);
+    stroke-width:2;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    filter:drop-shadow(0 0 6px var(--cyan-dim));
+    stroke-dasharray:1400;
+    stroke-dashoffset:1400;
+    animation:draw 2.6s cubic-bezier(.4,0,.2,1) 0.3s forwards;
+  }
+  .rig .frame{ stroke:var(--line-strong); stroke-width:1; fill:none; }
+  .rig .joint{ fill:var(--panel-2); stroke:var(--chrome-dim); stroke-width:1; }
+  .rig .amber-dot{ fill:var(--amber); }
+  @keyframes draw{ to{ stroke-dashoffset:0; } }
+
+  .coord{
+    position:absolute;
+    bottom:10px; right:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    color:var(--chrome-dim);
+    text-align:right;
+  }
+
+  /* ---------- SECTION HEADS ---------- */
+  section{ padding:96px 0; border-bottom:1px solid var(--line); }
+  .sec-head{
+    display:grid;
+    grid-template-columns:0.6fr 1.4fr;
+    gap:40px;
+    margin-bottom:56px;
+  }
+  .sec-head .idx{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--chrome-dim);
+    font-size:0.85rem;
+    padding-top:6px;
+  }
+  .sec-head h2{
+    font-size:clamp(1.7rem, 3vw, 2.3rem);
+    max-width:16ch;
+  }
+  @media (max-width:760px){
+    .sec-head{ grid-template-columns:1fr; gap:12px; }
+  }
+
+  /* ---------- ABOUT / MANIFESTO ---------- */
+  .about-body{
+    display:grid;
+    grid-template-columns:0.6fr 1.4fr;
+    gap:40px;
+  }
+  @media (max-width:760px){ .about-body{ grid-template-columns:1fr; } }
+  .about-body p{ color:var(--chrome-dim); max-width:62ch; margin-bottom:18px; }
+  .about-body p:last-child{ margin-bottom:0; }
+  .signal-divider{ width:100%; height:52px; margin:40px 0; }
+  .signal-divider path{
+    fill:none; stroke:var(--amber); stroke-width:1.6;
+    stroke-dasharray:6 5;
+    opacity:0.7;
+  }
+
+  /* ---------- EVENT MODULES ---------- */
+  .modules{
+    display:grid;
+    grid-template-columns:1.3fr 1fr 1fr;
+    grid-template-rows:auto auto;
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+  }
+  .mod{
+    background:var(--bg);
+    padding:34px;
+    position:relative;
+  }
+  .mod.tall{ grid-row:span 2; }
+  .mod .code{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.75rem;
+    color:var(--cyan);
+    margin-bottom:18px;
+    display:block;
+  }
+  .mod h3{ font-size:1.28rem; margin-bottom:10px; }
+  .mod p{ color:var(--chrome-dim); font-size:0.94rem; max-width:38ch; }
+  .mod .tag{
+    margin-top:20px;
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.68rem;
+    color:var(--chrome-dim);
+    border:1px solid var(--line-strong);
+    padding:3px 9px;
+  }
+  @media (max-width:860px){
+    .modules{ grid-template-columns:1fr; }
+    .mod.tall{ grid-row:auto; }
+  }
+
+  /* ---------- TIMELINE ---------- */
+  .rail{
+    position:relative;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:32px;
+  }
+  @media (max-width:820px){ .rail{ grid-template-columns:1fr; } }
+  .rail::before{
+    content:"";
+    position:absolute;
+    top:11px; left:0; right:0;
+    height:1px;
+    background:var(--line-strong);
+  }
+  @media (max-width:820px){ .rail::before{ display:none; } }
+  .day{ position:relative; padding-top:36px; }
+  .day::before{
+    content:attr(data-n);
+    position:absolute;
+    top:0; left:0;
+    width:22px; height:22px;
+    border:1px solid var(--cyan);
+    color:var(--cyan);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--bg);
+  }
+  .day h3{ font-size:1.1rem; margin-bottom:8px; }
+  .day .when{ font-family:'IBM Plex Mono', monospace; color:var(--amber); font-size:0.75rem; margin-bottom:12px; display:block; }
+  .day p{ color:var(--chrome-dim); font-size:0.93rem; }
+
+  /* ---------- PATRONS ---------- */
+  .patrons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px 40px;
+    align-items:center;
+  }
+  .patrons span{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:500;
+    color:var(--chrome-dim);
+    font-size:1rem;
+    letter-spacing:0.02em;
+  }
+  .patrons .note{
+    width:100%;
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--chrome-dim);
+    font-size:0.75rem;
+    margin-top:10px;
+  }
+
+  /* ---------- FINAL CTA ---------- */
+  .cta-section{
+    text-align:left;
+    padding:110px 0;
+  }
+  .cta-section h2{
+    font-size:clamp(2rem, 4.4vw, 3.2rem);
+    max-width:16ch;
+    margin-bottom:26px;
+  }
+  .cta-section p{ color:var(--chrome-dim); max-width:52ch; margin-bottom:36px; }
+
+  /* ---------- FOOTER ---------- */
+  footer{ padding:48px 0 64px; }
+  .foot-grid{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:24px;
+    padding-bottom:28px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:24px;
+  }
+  .foot-grid .col{ font-size:0.88rem; color:var(--chrome-dim); }
+  .foot-grid .col a{ display:block; margin-top:8px; transition:color .2s; }
+  .foot-grid .col a:hover{ color:var(--cyan); }
+  .foot-grid .col .head{ color:var(--chrome); font-family:'Chakra Petch',sans-serif; font-size:0.9rem; margin-bottom:2px; }
+  .foot-bottom{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--chrome-dim);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <svg viewBox="0 0 26 26" fill="none">
+        <path d="M2 14 H8 L10 8 L14 20 L16 14 H24" stroke="#3FD1C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>TECHFEST<span class="sub"> · IIT BOMBAY</span></span>
+    </div>
+    <nav class="links">
+      <a href="#about">Overview</a>
+      <a href="#modules">Events</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#patrons">Patrons</a>
+    </nav>
+    <a href="#register" class="btn">Register</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" style="border-bottom:1px solid var(--line); padding-top:168px;">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="kicker"><span class="dot"></span> 30TH EDITION · THEME: GRAFT</div>
+        <h1>Where flesh<br>meets <span>firmware</span></h1>
+        <p class="lede">Techfest, IIT Bombay's annual science and technology festival, returns for three days built around one question: how much of the human body can engineering rewrite. Asia's largest student-run tech festival, running since 1998.</p>
+        <div class="hero-cta">
+          <a href="#register" class="btn">Register now</a>
+          <a href="#modules" class="btn ghost">View events</a>
+        </div>
+
+        <div class="vitals">
+          <div class="vital"><div class="num">180K+</div><div class="lbl">ATTENDEES · LATEST EDITION</div></div>
+          <div class="vital"><div class="num">2,500+</div><div class="lbl">PARTNER COLLEGES · INDIA</div></div>
+          <div class="vital"><div class="num">500+</div><div class="lbl">INTL. UNIVERSITIES</div></div>
+          <div class="vital"><div class="num">28</div><div class="lbl">YEARS RUNNING</div></div>
+        </div>
+      </div>
+
+      <div class="rig" aria-hidden="true">
+        <svg viewBox="0 0 320 340">
+          <!-- structural frame: stylised limb rig -->
+          <path class="frame" d="M160 20 V90"/>
+          <path class="frame" d="M100 90 H220"/>
+          <path class="frame" d="M100 90 V180 L70 260"/>
+          <path class="frame" d="M220 90 V180 L250 260"/>
+          <circle class="joint" cx="160" cy="90" r="10"/>
+          <circle class="joint" cx="100" cy="90" r="7"/>
+          <circle class="joint" cx="220" cy="90" r="7"/>
+          <circle class="joint" cx="100" cy="180" r="7"/>
+          <circle class="joint" cx="220" cy="180" r="7"/>
+          <circle class="amber-dot" cx="70" cy="260" r="4"/>
+          <circle class="amber-dot" cx="250" cy="260" r="4"/>
+
+          <!-- pulse / circuit hybrid line -->
+          <path class="pulse-path" d="
+            M20 260
+            L60 260
+            L75 200
+            L90 300
+            L105 230
+            L120 260
+            L160 260
+            L160 200
+            L200 200
+            L200 140
+            L240 140
+            L240 90
+            L280 90
+            L280 60
+            L300 60
+          "/>
+        </svg>
+        <div class="coord mono">19.1336°N&nbsp;72.9154°E<br>MUMBAI, IN</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== ABOUT ===================== -->
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="idx mono">SEC. 01</div>
+        <h2>A festival that keeps upgrading itself</h2>
+      </div>
+      <div class="about-body">
+        <div></div>
+        <div>
+          <p>Techfest started in 1998 as a platform for Indian students to build and showcase real projects. It has since grown into Asia's largest science and technology festival, drawing participants from thousands of colleges and universities across India and beyond, with support from patrons including UNESCO and UNICEF.</p>
+          <p>This edition takes that history and points it at one theme: augmentation. Every stage of the festival — the competitions, the exhibits, the lectures — looks at where biological limits end and engineered ones begin. Robotics that move like muscle. Interfaces that read a signal before a hand does. Machines built to finish what a body can't.</p>
+          <svg class="signal-divider" viewBox="0 0 1000 52" preserveAspectRatio="none">
+            <path d="M0 26 L200 26 L215 8 L230 44 L245 26 L400 26 L415 12 L430 40 L445 26 L1000 26"/>
+          </svg>
+          <p>Three days on campus. Open to students, researchers, sponsors, and anyone curious enough to show up.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== EVENT MODULES ===================== -->
+  <section id="modules">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="idx mono">SEC. 02</div>
+        <h2>Event modules</h2>
+      </div>
+      <div class="modules">
+        <div class="mod tall">
+          <span class="code mono">MOD.RBW</span>
+          <h3>Robowars</h3>
+          <p>Combat robotics, built and driven live. Teams design machines to disable an opponent's rig in the arena — Techfest's longest-running signature event, open to international entries.</p>
+          <span class="tag">FLAGSHIP</span>
+        </div>
+        <div class="mod">
+          <span class="code mono">MOD.SIGNAL</span>
+          <h3>Neural Systems Challenge</h3>
+          <p>A hackathon built around applied AI and machine learning — from perception to control, judged on working systems, not slide decks.</p>
+        </div>
+        <div class="mod">
+          <span class="code mono">MOD.WING</span>
+          <h3>Drone & Aeromodelling</h3>
+          <p>Racing and design challenges for autonomous and piloted aircraft, including cross-institution and international teams.</p>
+        </div>
+        <div class="mod">
+          <span class="code mono">MOD.EXHIBIT</span>
+          <h3>Innovation Exhibition</h3>
+          <p>A floor of working robotics and hardware from labs and companies worldwide — the machines you'll be reading about next year, on display now.</p>
+        </div>
+        <div class="mod">
+          <span class="code mono">MOD.STAGE</span>
+          <h3>Lectures & Talks</h3>
+          <p>Scientists, founders, and researchers on where their fields are actually headed — not the pitch-deck version.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <section id="timeline">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="idx mono">SEC. 03</div>
+        <h2>Three days, on campus</h2>
+      </div>
+      <div class="rail">
+        <div class="day" data-n="1">
+          <span class="when">DAY ONE</span>
+          <h3>Opening & exhibition floor</h3>
+          <p>Inaugural ceremony, exhibition floor opens, early-round competitions begin across the modules.</p>
+        </div>
+        <div class="day" data-n="2">
+          <span class="when">DAY TWO</span>
+          <h3>Competitions peak</h3>
+          <p>Robowars qualifiers, hackathon judging rounds, and the main lecture stage run through the day.</p>
+        </div>
+        <div class="day" data-n="3">
+          <span class="when">DAY THREE</span>
+          <h3>Finals & closing</h3>
+          <p>Grand finals across modules, closing ceremony, and Techfest's traditional closing-night show.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PATRONS ===================== -->
+  <section id="patrons">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="idx mono">SEC. 04</div>
+        <h2>Organised by, supported by</h2>
+      </div>
+      <div class="patrons">
+        <span>Student Community, IIT Bombay</span>
+        <span>UNESCO</span>
+        <span>UNICEF</span>
+        <span>Centre for Environment Education</span>
+        <span>SAYEN</span>
+        <div class="note">Organiser and patron listing per Techfest's public record — confirm current-year partners before publishing.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL CTA ===================== -->
+  <section id="register" class="cta-section" style="border-bottom:none;">
+    <div class="wrap">
+      <h2>Reserve your place before the arena fills up</h2>
+      <p>Registration covers all three days, every module, and the exhibition floor. Team pricing and travel support are available for out-of-state colleges.</p>
+      <div class="hero-cta">
+        <a href="#" class="btn">Register your team</a>
+        <a href="#" class="btn ghost">Download brochure</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="col">
+        <div class="head">Techfest, IIT Bombay</div>
+        Indian Institute of Technology Bombay<br>Powai, Mumbai — 400076
+      </div>
+      <div class="col">
+        <div class="head">Explore</div>
+        <a href="#about">Overview</a>
+        <a href="#modules">Events</a>
+        <a href="#timeline">Timeline</a>
+      </div>
+      <div class="col">
+        <div class="head">Contact</div>
+        <a href="https://www.techfest.org" target="_blank" rel="noopener">techfest.org</a>
+        <a href="#">Sponsorship</a>
+        <a href="#">Media kit</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© TECHFEST, IIT BOMBAY — CONCEPT DESIGN</span>
+      <span>19.1336°N 72.9154°E</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
