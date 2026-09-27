@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ideate — Techfest · IIT Bombay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- Three.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  :root{
+    --bg: #070908;
+    --panel: rgba(18, 23, 22, 0.75);
+    --panel-2: rgba(25, 31, 30, 0.85);
+    --line: rgba(220,231,227,0.12);
+    --line-strong: rgba(220,231,227,0.28);
+    --chrome: #E1E8E5;
+    --chrome-dim: #8A9A96;
+    --cyan: #3FD1C7;
+    --cyan-dim: rgba(63,209,199,0.35);
+    --cyan-glow: rgba(63,209,199,0.6);
+    --amber: #F2A93B;
+    --amber-glow: rgba(242,169,59,0.6);
+    --purple: #A78BFA;
+    --purple-glow: rgba(167,139,250,0.6);
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  body{
+    background:var(--bg);
+    color:var(--chrome);
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    perspective: 1000px;
+  }
+
+  /* Fixed 3D background WebGL Canvas */
+  #bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  h1,h2,h3,.display{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  a{ color:inherit; text-decoration:none; }
+  ::selection{ background:var(--cyan); color:#06110F; }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:0 32px;
+  }
+
+  /* ---------- NAV ---------- */
+  header{
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:50;
+    background:rgba(10,13,12,0.75);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--line);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  }
+  .nav{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height:68px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size:1.05rem;
+    letter-spacing:0.02em;
+    text-shadow: 0 0 12px rgba(63,209,199,0.3);
+  }
+  .brand svg{ width:26px; height:26px; filter: drop-shadow(0 0 6px var(--cyan)); }
+  .brand .sub{
+    color:var(--chrome-dim);
+    font-family:'IBM Plex Mono', monospace;
+    font-weight:400;
+    font-size:0.72rem;
+  }
+  nav.links{
+    display:flex;
+    gap:36px;
+    font-size:0.92rem;
+    color:var(--chrome-dim);
+  }
+  nav.links a{ transition:color .2s, text-shadow .2s; }
+  nav.links a:hover, nav.links a.active{
+    color:var(--cyan);
+    text-shadow:0 0 8px var(--cyan-glow);
+  }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 22px;
+    background:var(--cyan);
+    color:#06110F;
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size:0.9rem;
+    letter-spacing:0.02em;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    transition:all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 15px rgba(63,209,199,0.4);
+    cursor: pointer;
+  }
+  .btn:hover{
+    filter:brightness(1.2);
+    transform:translateY(-2px) scale(1.03);
+    box-shadow: 0 0 25px rgba(63,209,199,0.8);
+  }
+  .btn.ghost{
+    background:rgba(18,23,22,0.6);
+    color:var(--chrome);
+    border:1px solid var(--line-strong);
+    box-shadow: none;
+    backdrop-filter: blur(8px);
+  }
+  .btn.ghost:hover{
+    border-color:var(--cyan);
+    color:var(--cyan);
+    box-shadow: 0 0 15px var(--cyan-dim);
+  }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    position:relative;
+    padding:168px 0 90px;
+    border-bottom:1px solid var(--line);
+    overflow:hidden;
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    gap:48px;
+    align-items:center;
+  }
+  @media (max-width:900px){ .hero-grid{ grid-template-columns:1fr; } }
+
+  .kicker{
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    color:var(--amber);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.82rem;
+    margin-bottom:22px;
+    background: rgba(242, 169, 59, 0.08);
+    border: 1px solid rgba(242, 169, 59, 0.25);
+    padding: 6px 14px;
+    border-radius: 4px;
+    backdrop-filter: blur(6px);
+  }
+  .kicker .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--amber);
+    box-shadow:0 0 10px var(--amber);
+    animation:blip 2.4s ease-in-out infinite;
+  }
+  @keyframes blip{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+
+  .hero h1{
+    font-size:clamp(2.6rem, 5.4vw, 4.6rem);
+    line-height:1.04;
+    max-width:14ch;
+    text-shadow: 0 0 20px rgba(0,0,0,0.8);
+  }
+  .hero h1 span{
+    background: linear-gradient(135deg, #F2A93B 0%, #3FD1C7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero p.lede{
+    margin-top:26px;
+    max-width:48ch;
+    color:var(--chrome-dim);
+    font-size:1.08rem;
+  }
+
+  .hero-cta{
+    display:flex;
+    gap:16px;
+    margin-top:38px;
+    flex-wrap:wrap;
+  }
+
+  /* Vitals */
+  .vitals{
+    margin-top:56px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    background: rgba(18, 23, 22, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--line-strong);
+    border-radius: 4px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  .vital{
+    padding:18px 20px;
+    border-right:1px solid var(--line);
+    transition: transform 0.3s, background 0.3s;
+  }
+  .vital:hover{ background: rgba(242,169,59,0.05); transform: translateY(-2px); }
+  .vital:last-child{ border-right:none; }
+  .vital .num{
+    font-family:'Chakra Petch', sans-serif;
+    font-weight:600;
+    font-size:1.6rem;
+    color:var(--amber);
+    text-shadow: 0 0 10px rgba(242,169,59,0.3);
+  }
+  .vital .lbl{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.7rem;
+    color:var(--chrome-dim);
+    margin-top:4px;
+  }
+  @media (max-width:640px){
+    .vitals{ grid-template-columns:repeat(2,1fr); }
+    .vital{ border-right:1px solid var(--line); }
+    .vital:nth-child(2n){ border-right:none; }
+  }
+
+  /* 3D Canvas Hero Holder */
+  .ideate-3d-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+  }
+  #ideate-hero-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+    cursor: grab;
+  }
+  #ideate-hero-canvas:active { cursor: grabbing; }
+
+  .rig-hud {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--amber);
+    background: rgba(10, 13, 12, 0.85);
+    border: 1px solid var(--amber-glow);
+    padding: 8px 12px;
+    border-radius: 4px;
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 15px rgba(242,169,59,0.2);
+  }
+
+  /* ---------- SECTION HEADS ---------- */
+  section{ padding:96px 0; border-bottom:1px solid var(--line); position: relative; }
+  .sec-head{
+    display:grid;
+    grid-template-columns:0.6fr 1.4fr;
+    gap:40px;
+    margin-bottom:56px;
+  }
+  .sec-head .idx{
+    font-family:'IBM Plex Mono', monospace;
+    color:var(--amber);
+    font-size:0.85rem;
+    padding-top:6px;
+    letter-spacing: 0.1em;
+  }
+  .sec-head h2{
+    font-size:clamp(1.7rem, 3vw, 2.3rem);
+    max-width:18ch;
+    text-shadow: 0 0 15px rgba(0,0,0,0.8);
+  }
+  @media (max-width:760px){ .sec-head{ grid-template-columns:1fr; gap:12px; } }
+
+  /* ---------- IDEATE COMPETITION CATEGORIES (3D CARDS) ---------- */
+  .ideate-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 28px;
+  }
+  @media (max-width:960px){ .ideate-grid { grid-template-columns: 1fr; } }
+
+  .ideate-card-3d {
+    perspective: 1000px;
+  }
+
+  .ideate-card {
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    padding: 34px;
+    border-radius: 8px;
+    backdrop-filter: blur(12px);
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease-out, border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ideate-card:hover {
+    border-color: var(--amber);
+    box-shadow: 0 15px 40px rgba(242,169,59,0.25), 0 0 15px rgba(242,169,59,0.2);
+  }
+
+  .ideate-card .icon-3d-holder {
+    width: 100%;
+    height: 140px;
+    margin-bottom: 20px;
+  }
+
+  .ideate-card .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--cyan);
+    margin-bottom: 12px;
+    display: block;
+    letter-spacing: 0.08em;
+  }
+
+  .ideate-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+    color: var(--chrome);
+  }
+
+  .ideate-card p {
+    color: var(--chrome-dim);
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    flex-grow: 1;
+  }
+
+  .ideate-card .prize {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: var(--amber);
+    background: rgba(242,169,59,0.1);
+    border: 1px solid var(--amber-glow);
+    padding: 8px 14px;
+    border-radius: 4px;
+    display: inline-block;
+    align-self: flex-start;
+  }
+
+  /* ---------- TIMELINE / PHASES ---------- */
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    position: relative;
+  }
+  @media (max-width:860px){ .timeline-grid { grid-template-columns: 1fr; } }
+
+  .t-step {
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+    padding: 28px 20px;
+    border-radius: 6px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .t-step:hover {
+    transform: translateY(-6px);
+    border-color: var(--cyan);
+  }
+
+  .t-step .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--cyan);
+    background: rgba(63,209,199,0.1);
+    border: 1px solid var(--cyan-glow);
+    padding: 4px 10px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+
+  .t-step h3 { font-size: 1.1rem; margin-bottom: 8px; }
+  .t-step .date { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--amber); margin-bottom: 10px; display: block; }
+  .t-step p { color: var(--chrome-dim); font-size: 0.88rem; }
+
+  /* ---------- PARALLAX SCROLL & REVEALS ---------- */
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .parallax-floating-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+  }
+  .p-shape {
+    position: absolute;
+    border: 1px solid var(--amber-glow);
+    border-radius: 6px;
+    opacity: 0.15;
+    box-shadow: 0 0 15px rgba(242,169,59,0.1);
+  }
+  .p-shape-1 { top: 20%; left: 4%; width: 150px; height: 150px; transform: rotate(20deg); }
+  .p-shape-2 { top: 60%; right: 5%; width: 190px; height: 190px; transform: rotate(-30deg); border-color: var(--cyan-glow); }
+
+  /* ---------- FOOTER ---------- */
+  footer{ padding:48px 0 64px; position: relative; }
+  .foot-grid{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:24px;
+    padding-bottom:28px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:24px;
+  }
+  .foot-grid .col{ font-size:0.88rem; color:var(--chrome-dim); }
+  .foot-grid .col a{ display:block; margin-top:8px; transition:color .2s; }
+  .foot-grid .col a:hover{ color:var(--amber); text-shadow: 0 0 8px var(--amber); }
+  .foot-grid .col .head{ color:var(--chrome); font-family:'Chakra Petch',sans-serif; font-size:0.9rem; margin-bottom:2px; }
+  .foot-bottom{
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem;
+    color:var(--chrome-dim);
+  }
+</style>
+</head>
+<body>
+
+<!-- Global 3D Canvas Background -->
+<canvas id="bg-canvas"></canvas>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <svg viewBox="0 0 26 26" fill="none">
+        <path d="M2 14 H8 L10 8 L14 20 L16 14 H24" stroke="#F2A93B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>IDEATE<span class="sub"> · TECHFEST IIT BOMBAY</span></span>
+    </div>
+    <nav class="links">
+      <a href="Index.html">Home</a>
+      <a href="#overview" class="active">Overview</a>
+      <a href="#tracks">Tracks</a>
+      <a href="#timeline">Timeline</a>
+    </nav>
+    <a href="#submit" class="btn">Submit Idea</a>
+  </div>
+</header>
+
+<main>
+
+  <div class="parallax-floating-bg">
+    <div class="p-shape p-shape-1"></div>
+    <div class="p-shape p-shape-2"></div>
+  </div>
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="overview">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="kicker"><span class="dot"></span> FLAGSHIP INNOVATION CHALLENGE</div>
+        <h1>Architecting solutions for <span>global impact</span></h1>
+        <p class="lede">Ideate is Techfest IIT Bombay's premier international competition inviting bold thinkers, engineers, and researchers to propose technological solutions for pressing real-world challenges.</p>
+        <div class="hero-cta">
+          <a href="#submit" class="btn">Submit Proposal</a>
+          <a href="#tracks" class="btn ghost">Explore Tracks</a>
+        </div>
+
+        <div class="vitals">
+          <div class="vital"><div class="num">₹7.5L+</div><div class="lbl">TOTAL PRIZE POOL</div></div>
+          <div class="vital"><div class="num">300+</div><div class="lbl">STARTUP MENTORS</div></div>
+          <div class="vital"><div class="num">40+</div><div class="lbl">COUNTRIES PARTICIPATING</div></div>
+          <div class="vital"><div class="num">100%</div><div class="lbl">INCUBATION SUPPORT</div></div>
+        </div>
+      </div>
+
+      <!-- 3D Interactive WebGL Ideate Core Model -->
+      <div class="ideate-3d-wrapper">
+        <canvas id="ideate-hero-canvas"></canvas>
+        <div class="rig-hud">
+          <div>IDEATE 3D INNOVATION MATRIX ACTIVE</div>
+          <div style="font-size:0.6rem; color:var(--chrome-dim); margin-top:2px;">[ INTERACTIVE 3D LIGHT CUBE ]</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== COMPETITION TRACKS ===================== -->
+  <section id="tracks">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="idx mono">SEC. 01</div>
+        <h2>Problem statements & innovation tracks</h2>
+      </div>
+
+      <div class="ideate-grid">
+        <!-- Track 1 -->
+        <div class="ideate-card-3d">
+          <div class="ideate-card">
+            <div>
+              <div class="icon-3d-holder" id="icon-3d-biomed"></div>
+              <span class="tag mono">TRACK 01 · BIOMEDICAL</span>
+              <h3>Bio-Augmentation & MedTech</h3>
+              <p>Designing low-cost prosthetics, neural signal interfaces, dynamic drug delivery mechanisms, and diagnostic hardware for underserved communities.</p>
+            </div>
+            <div class="prize">PRIZE POOL: ₹2,50,000</div>
+          </div>
+        </div>
+
+        <!-- Track 2 -->
+        <div class="ideate-card-3d">
+          <div class="ideate-card">
+            <div>
+              <div class="icon-3d-holder" id="icon-3d-climate"></div>
+              <span class="tag mono">TRACK 02 · CLIMATE</span>
+              <h3>Clean Energy & Circular Ecosystems</h3>
+              <p>Next-generation carbon capture, smart grid management algorithms, modular water purification systems, and bio-degradable polymer alternatives.</p>
+            </div>
+            <div class="prize">PRIZE POOL: ₹2,50,000</div>
+          </div>
+        </div>
+
+        <!-- Track 3 -->
+        <div class="ideate-card-3d">
+          <div class="ideate-card">
+            <div>
+              <div class="icon-3d-holder" id="icon-3d-ai"></div>
+              <span class="tag mono">TRACK 03 · AI & ROBOTICS</span>
+              <h3>Autonomous Systems & AI for Good</h3>
+              <p>Edge-AI for disaster response drones, automated agricultural hardware, swarm robotics for rescue missions, and resilient cyber-physical grids.</p>
+            </div>
+            <div class="prize">PRIZE POOL: ₹2,50,000</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TIMELINE ===================== -->
+  <section id="timeline">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="idx mono">SEC. 02</div>
+        <h2>Roadmap to the finals</h2>
+      </div>
+
+      <div class="timeline-grid">
+        <div class="t-step">
+          <span class="step-num">PHASE 01</span>
+          <h3>Abstract Submission</h3>
+          <span class="date">OCTOBER 25, 2026</span>
+          <p>Submit a concise 500-word executive summary detailing your problem choice, methodology, and proposed technical solution.</p>
+        </div>
+
+        <div class="t-step">
+          <span class="step-num">PHASE 02</span>
+          <h3>Full Technical Report</h3>
+          <span class="date">NOVEMBER 15, 2026</span>
+          <p>Shortlisted teams present CAD designs, algorithmic simulations, feasibility analysis, and budget requirements.</p>
+        </div>
+
+        <div class="t-step">
+          <span class="step-num">PHASE 03</span>
+          <h3>Mentorship & Prototyping</h3>
+          <span class="date">DECEMBER 01, 2026</span>
+          <p>Top 20 teams receive industry mentors and micro-grants to fabricate physical or functional digital prototypes.</p>
+        </div>
+
+        <div class="t-step">
+          <span class="step-num">PHASE 04</span>
+          <h3>Grand Finale at IIT Bombay</h3>
+          <span class="date">TECHFEST 2026</span>
+          <p>Present live working models before venture capitalists, domain experts, and international jury members on campus.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== SUBMISSION CTA ===================== -->
+  <section id="submit" style="border-bottom:none;">
+    <div class="wrap">
+      <div class="sec-head">
+        <div class="idx mono">SEC. 03</div>
+        <h2>Ready to build the future?</h2>
+      </div>
+      <p style="color:var(--chrome-dim); max-width:56ch; margin-bottom:32px; font-size:1.1rem;">Submit your proposal before October 25th. Open to students, research scholars, independent inventors, and early-stage innovators worldwide.</p>
+      <div class="hero-cta">
+        <a href="#" class="btn">Register & Submit Idea</a>
+        <a href="Index.html" class="btn ghost">Back to Main Techfest</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="col">
+        <div class="head">Ideate — Techfest, IIT Bombay</div>
+        Indian Institute of Technology Bombay<br>Powai, Mumbai — 400076
+      </div>
+      <div class="col">
+        <div class="head">Navigation</div>
+        <a href="Index.html">Techfest Home</a>
+        <a href="#tracks">Ideate Tracks</a>
+        <a href="#timeline">Timeline</a>
+      </div>
+      <div class="col">
+        <div class="head">Contact</div>
+        <a href="mailto:ideate@techfest.org">ideate@techfest.org</a>
+        <a href="https://www.techfest.org" target="_blank">techfest.org</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© IDEATE, TECHFEST IIT BOMBAY — 3D CONCEPT DESIGN</span>
+      <span>19.1336°N 72.9154°E</span>
+    </div>
+  </div>
+</footer>
+
+<!-- 3D Scripts & WebGL Engines -->
+<script>
+  /* ----------------------------------------------------
+     1. GLOBAL 3D BACKGROUND CANVAS
+     ---------------------------------------------------- */
+  (function initBg3D() {
+    const canvas = document.getElementById('bg-canvas');
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 40;
+
+    const particleCount = 600;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+
+    const colorAmber = new THREE.Color(0xF2A93B);
+    const colorCyan = new THREE.Color(0x3FD1C7);
+
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 120;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 120;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 120;
+
+      const mixColor = Math.random() > 0.5 ? colorAmber : colorCyan;
+      colors[i * 3] = mixColor.r;
+      colors[i * 3 + 1] = mixColor.g;
+      colors[i * 3 + 2] = mixColor.b;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({ size: 0.6, vertexColors: true, transparent: true, opacity: 0.6 });
+    const particles = new THREE.Points(geometry, material);
+    scene.add(particles);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      particles.rotation.y += 0.0006;
+      particles.rotation.x += 0.0002;
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+
+  /* ----------------------------------------------------
+     2. HERO 3D IDEATE MATRIX MODEL
+     ---------------------------------------------------- */
+  (function initIdeateHero3D() {
+    const canvas = document.getElementById('ideate-hero-canvas');
+    if (!canvas || typeof THREE === 'undefined') return;
+
+    const container = canvas.parentElement;
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(w, h);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+    camera.position.set(0, 0, 12);
+
+    const group = new THREE.Group();
+    scene.add(group);
+
+    // Glowing Idea Matrix Prism Wireframe
+    const cubeGeo = new THREE.BoxGeometry(3.2, 3.2, 3.2);
+    const cubeMat = new THREE.MeshStandardMaterial({
+      color: 0xF2A93B,
+      wireframe: true,
+      emissive: 0xF2A93B,
+      emissiveIntensity: 0.5
+    });
+    const cube = new THREE.Mesh(cubeGeo, cubeMat);
+    group.add(cube);
+
+    const innerOcta = new THREE.OctahedronGeometry(2);
+    const innerMat = new THREE.MeshStandardMaterial({
+      color: 0x3FD1C7,
+      wireframe: true,
+      emissive: 0x3FD1C7,
+      emissiveIntensity: 0.6
+    });
+    const octa = new THREE.Mesh(innerOcta, innerMat);
+    group.add(octa);
+
+    // Lights
+    const p1 = new THREE.PointLight(0xF2A93B, 3, 20);
+    p1.position.set(4, 4, 4);
+    scene.add(p1);
+
+    const p2 = new THREE.PointLight(0x3FD1C7, 2, 20);
+    p2.position.set(-4, -4, 4);
+    scene.add(p2);
+
+    let targetRotationY = 0;
+    let targetRotationX = 0;
+    let isDragging = false;
+    let previousMousePosition = { x: 0, y: 0 };
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+    window.addEventListener('mouseup', () => { isDragging = false; });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const deltaX = e.clientX - previousMousePosition.x;
+      const deltaY = e.clientY - previousMousePosition.y;
+      targetRotationY += deltaX * 0.008;
+      targetRotationX += deltaY * 0.008;
+      previousMousePosition = { x: e.clientX, y: e.clientY };
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (!isDragging) { targetRotationY += 0.005; }
+      group.rotation.y += (targetRotationY - group.rotation.y) * 0.08;
+      group.rotation.x += (targetRotationX - group.rotation.x) * 0.08;
+      octa.rotation.y -= 0.01;
+      renderer.render(scene, camera);
+    }
+    animate();
+  })();
+
+  /* ----------------------------------------------------
+     3. TRACKS 3D MINI VIEWPORTS
+     ---------------------------------------------------- */
+  (function initTrackIcons() {
+    if (typeof THREE === 'undefined') return;
+
+    function createTrackIcon(containerId, shapeType, colorHex) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      const w = container.clientWidth || 250;
+      const h = container.clientHeight || 140;
+
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(w, h);
+      container.appendChild(renderer.domElement);
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+      camera.position.z = 5.5;
+
+      const light = new THREE.PointLight(colorHex, 2, 20);
+      light.position.set(2, 3, 4);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+
+      let mesh;
+      if (shapeType === 'biomed') {
+        mesh = new THREE.Mesh(
+          new THREE.TorusGeometry(1.2, 0.35, 16, 50),
+          new THREE.MeshStandardMaterial({ color: colorHex, wireframe: true, emissive: colorHex, emissiveIntensity: 0.4 })
+        );
+      } else if (shapeType === 'climate') {
+        mesh = new THREE.Mesh(
+          new THREE.DodecahedronGeometry(1.3),
+          new THREE.MeshStandardMaterial({ color: colorHex, wireframe: true, emissive: colorHex, emissiveIntensity: 0.4 })
+        );
+      } else {
+        mesh = new THREE.Mesh(
+          new THREE.TetrahedronGeometry(1.5),
+          new THREE.MeshStandardMaterial({ color: colorHex, wireframe: true, emissive: colorHex, emissiveIntensity: 0.4 })
+        );
+      }
+      scene.add(mesh);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        mesh.rotation.y += 0.015;
+        mesh.rotation.x += 0.008;
+        renderer.render(scene, camera);
+      }
+      animate();
+    }
+
+    createTrackIcon('icon-3d-biomed', 'biomed', 0xF2A93B);
+    createTrackIcon('icon-3d-climate', 'climate', 0x3FD1C7);
+    createTrackIcon('icon-3d-ai', 'ai', 0xF2A93B);
+  })();
+
+  /* ----------------------------------------------------
+     4. PARALLAX & TILT EFFECTS
+     ---------------------------------------------------- */
+  (function initCardTilt() {
+    const cards = document.querySelectorAll('.ideate-card, .t-step');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const rotateX = ((y - rect.height / 2) / (rect.height / 2)) * -8;
+        const rotateY = ((x - rect.width / 2) / (rect.width / 2)) * 8;
+        card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px)';
+      });
+    });
+
+    const revealElements = document.querySelectorAll('.ideate-card-3d, .t-step, .sec-head');
+    revealElements.forEach(el => el.classList.add('reveal-on-scroll'));
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('is-visible');
+      });
+    }, { threshold: 0.15 });
+
+    revealElements.forEach(el => observer.observe(el));
+  })();
+</script>
+
+</body>
+</html>
